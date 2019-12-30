@@ -4,24 +4,8 @@
 #include "Arduino.h"
 #include "mqttClient.hpp"
 #include "array.hpp"
-
-class motionListener {
-    public:
-        virtual void motionDetected() = 0;
-};
-
-class motionSensor {
-    private:
-        const uint8_t motionPin;
-
-        array<motionListener*, 5> listeners;
-        uint8_t amountOfListeners = 0;
-    public:
-        motionSensor(const uint8_t motionPin);
-
-        void addListener(motionListener & listener);
-        void checkForMotion();
-};
+#include "motion.hpp"
+#include "buzzer.hpp"
 
 class alarmSystem : public messageListener, public motionListener {
     private:
@@ -30,8 +14,13 @@ class alarmSystem : public messageListener, public motionListener {
 
         String state;
         bool nightAlarm = false;
+
+        notificationLed & led;
+        piezoBuzzer & buzzer;
+
+        void disableActuators();
     public:
-        alarmSystem(mqttClient & client, String topic, String state);
+        alarmSystem(mqttClient & client, String topic, notificationLed & led, piezoBuzzer & buzzer, String state = "disarmed");
 
         void armAway();
         void armHome();

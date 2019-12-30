@@ -3,20 +3,26 @@
 #include <NewRemoteTransmitter.h>
 #include "speaker.hpp"
 #include "alarm.hpp"
+#include "buzzer.hpp"
 #include "switch.hpp"
 #include "array.hpp"
 #include "mqttClient.hpp"
+#include "climate.hpp"
+#include "led.hpp"
+
+notificationLed led(D2, 1, D5, 250);
+piezoBuzzer buzzer(D8);
 
 WiFiClient espClient;
-mqttClient client("SSID", "WPA", "IP", "/raspberrypi/hassio", espClient);
+mqttClient client("SSID", "WPA", "Broker IP", "/raspberrypi/hassio", espClient, led, buzzer);
 
 NewRemoteTransmitter kakuTransmitter(20589486, D3, 257, 3);
 NewRemoteTransmitter actionTransmitter(54973440, D3, 261, 3);
 
 speaker bose(D0, client);
-
-alarmSystem alarm(client, "/woonkamer/alarm", "disarmed");
-motionSensor sensor(D1);
+alarmSystem alarm(client, "/woonkamer/alarm", led, buzzer);
+motionSensor movementSensor(D1);
+tempHumSensor climateSensor(client, D7, 60000);
 
 wallSwitch kaku0(kakuTransmitter, 0, client, "/woonkamer/kaku0", "kaku0");
 wallSwitch kaku1(kakuTransmitter, 1, client, "/woonkamer/kaku1", "kaku1");
@@ -25,7 +31,8 @@ wallSwitch kaku3(kakuTransmitter, 3, client, "/woonkamer/kaku3", "kaku3");
 wallSwitch action1(actionTransmitter, 1, client, "/woonkamer/action1", "action1");
 wallSwitch action2(actionTransmitter, 2, client, "/woonkamer/action2", "action2");
 wallSwitch action3(actionTransmitter, 3, client, "/woonkamer/action3", "action3");
-array<wallSwitch, 7> wallSwitches = {kaku0, kaku1, kaku2, kaku3, action1, action2, action3};
+wallSwitch action4(actionTransmitter, 4, client, "/woonkamer/action4", "action4");
+array<wallSwitch, 8> wallSwitches = {kaku0, kaku1, kaku2, kaku3, action1, action2, action3, action4};
 
 void callback(char* topic, byte* payload, unsigned int length) {
     static String message;
@@ -37,17 +44,25 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void setup() {
-    WiFi.mode(WIFI_STA);
-    client.setupWifi();
-    client.setupConnections();
     for(wallSwitch & wallSocket : wallSwitches){
         client.addListener(wallSocket);
     }
+    client.setupWifi();
+    client.setupConnections();
     client.addListener(alarm);
-    sensor.addListener(alarm);
+    movementSensor.addListener(alarm);
 }
 
 void loop() {
     client.checkForMessages();
-    sensor.checkForMotion();
+    movementSensor.checkForMotion();
+
+    if(led.timeToUpdate()){
+        led.update();
+        buzzer.update();
+    }
+
+    if(climateSensor.timeToMeasure()){
+        climateSensor.measureAndPublish();
+    }
 }

@@ -1,11 +1,15 @@
 #include "mqttClient.hpp"
 
-mqttClient::mqttClient(char* ssid, char* password, char* mqttServer, const char* topic, WiFiClient & espClient):
+mqttClient::mqttClient(char* ssid, char* password, char* mqttServer, const char* topic, WiFiClient & espClient, notificationLed & led, piezoBuzzer & buzzer, const bool retainedMessages, const uint8_t qosLevel):
     ssid(ssid),
     password(password),
     mqttServer(mqttServer),
     topic(topic),
-    client(espClient)
+    client(espClient),
+    retainedMessages(retainedMessages),
+    qosLevel(qosLevel),
+    led(led),
+    buzzer(buzzer)
 {
     WiFi.mode(WIFI_STA);
 }
@@ -24,9 +28,9 @@ void mqttClient::notifyListeners(const String & message, const char* topic){
 }
 
 void mqttClient::setupWifi() {
+    led.setColor(color(1023, 0, 0));
     delay(10);
     WiFi.begin(ssid, password);
-
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
     }
@@ -35,20 +39,27 @@ void mqttClient::setupWifi() {
 void mqttClient::setupConnections(){
     client.setServer(mqttServer, 1883);
     client.setCallback(callback);
-    client.subscribe(topic);
+    client.subscribe(topic, qosLevel);
     reconnect();                //Establish a connection by signing in with credentials.
 }
 
 void mqttClient::reconnect() {
+    led.setColor(color(1023, 0, 0));
     while (!client.connected()) {
         if (client.connect("ESP8266Client", "Arduino", "Snip238!")) {
+            buzzer.turnOn(1000);
+            delay(500);
             client.subscribe(topic);
             for (int i = 0; i < amountOfListeners; i++){
                 listeners[i]->messageReceived("CONNECTED");
             }
+            buzzer.turnOn(2000);
+            delay(500);
+            buzzer.turnOff();
+            led.enableFlashing(color(0, 1023, 0), 5500, 1000);
             break;
         } else {
-            delay(1000);
+            delay(500);
         }
     }
 }
@@ -61,5 +72,5 @@ void mqttClient::checkForMessages(){
 }
 
 void mqttClient::sendMessage(const char* topic, const char* messageToSend){
-    client.publish(topic, messageToSend);
+    client.publish(topic, messageToSend, retainedMessages);
 }

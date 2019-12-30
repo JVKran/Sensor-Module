@@ -1,26 +1,17 @@
 #include "alarm.hpp"
 
-motionSensor::motionSensor(const uint8_t motionPin):
-    motionPin(motionPin)
-{}
-
-void motionSensor::checkForMotion(){
-    if(digitalRead(motionPin) == 1){
-        for (uint8_t i = 0; i < amountOfListeners; i++){
-            listeners[i]->motionDetected();
-        }
-    }
-}
-
-void motionSensor::addListener(motionListener & listener){
-    listeners[amountOfListeners++] = &listener;
-} 
-
-alarmSystem::alarmSystem(mqttClient & client, String topic, String state):
+alarmSystem::alarmSystem(mqttClient & client, String topic, notificationLed & led, piezoBuzzer & buzzer, String state):
     client(client),
     topic(topic), 
-    state(state)
+    state(state),
+    led(led),
+    buzzer(buzzer)
 {}
+
+void alarmSystem::disableActuators(){
+    led.disableFlashing();
+    buzzer.disableSiren();
+}
 
 void alarmSystem::armAway(){
     state = "armed_away";
@@ -51,19 +42,26 @@ String alarmSystem::getState(){
 }
 
 void alarmSystem::trigger(){
-    state = "triggered";
-    client.sendMessage(topic.c_str(), state.c_str());
+    if(state != "triggered"){
+        state = "triggered";
+        client.sendMessage(topic.c_str(), state.c_str());
+        buzzer.enableSiren(2000, 500, 1000);
+        led.enableFlashing(color(1023, 0, 0), 180000, 1000);
+    }
 }
 
 void alarmSystem::messageReceived(const String & receivedMessage, const char* topic){
-    if(receivedMessage=="ARM_AWAY"){
-        armAway();
-    } else if(receivedMessage=="ARM_HOME"){
-        armHome();
-    } else if(receivedMessage=="ARM_NIGHT"){
-        armNight();
-    } else if(receivedMessage=="DISARM"){
-        disarm();
+    if(receivedMessage.startsWith("ARM") || receivedMessage.endsWith("ARM")){
+        if(receivedMessage.endsWith("AWAY")){
+            armAway();
+        } else if(receivedMessage.endsWith("HOME")){
+            armHome();
+        } else if(receivedMessage.endsWith("NIGHT")){
+            armNight();
+        } else if(receivedMessage == "DISARM"){
+            disarm();
+        }
+        disableActuators();
     }
 }
 

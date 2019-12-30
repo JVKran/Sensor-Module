@@ -48,13 +48,15 @@ void speaker::muteVolume(){
 }
 
 void speaker::messageReceived(const String & receivedMessage, const char* topic){
-	if (receivedMessage == "verst_aan"){
-		togglePower();
-	} else if(receivedMessage=="verst_laag"){
-		lowerVolume();
-	} else if(receivedMessage=="verst_hoog"){
-		increaseVolume();
-	} else if(receivedMessage=="verst_demp"){
-		muteVolume();
+	if(receivedMessage.startsWith("verst")){
+		if(receivedMessage.endsWith("aan")){
+			togglePower();
+		} else if(receivedMessage.endsWith("laag")){
+			lowerVolume();
+		} else if(receivedMessage.endsWith("hoog")){
+			increaseVolume();
+		} else if(receivedMessage.endsWith("demp")){
+			muteVolume();
+		}
 	}
 }

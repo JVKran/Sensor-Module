@@ -2,7 +2,6 @@
 #define __SPEAKER_HPP
 
 #include "Arduino.h"
-#include <IRremoteESP8266.h>
 #include "mqttClient.hpp"
 #include <IRsend.h>
 
