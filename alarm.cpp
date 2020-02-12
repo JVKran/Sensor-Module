@@ -45,8 +45,10 @@ void alarmSystem::trigger(){
     if(state != "triggered"){
         state = "triggered";
         client.sendMessage(topic.c_str(), state.c_str());
-        buzzer.enableSiren(2000, 500, 1000);
-        led.enableFlashing(color(1023, 0, 0), 180000, 1000);
+        if(!nightAlarm){
+            buzzer.enableSiren(2000, 500, 1000);
+            led.enableFlashing(color(1023, 0, 0), 180000, 1000);
+        }
     }
 }
 

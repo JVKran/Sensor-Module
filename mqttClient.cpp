@@ -46,7 +46,7 @@ void mqttClient::setupConnections(){
 void mqttClient::reconnect() {
     led.setColor(color(1023, 0, 0));
     while (!client.connected()) {
-        if (client.connect("ESP8266Client", "Arduino", "Snip238!")) {
+        if (client.connect("Client-ID", "Client-Username", "Client-Password")) {
             buzzer.turnOn(1000);
             delay(500);
             client.subscribe(topic);
