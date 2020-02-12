@@ -17,7 +17,7 @@ notificationLed led(D2, 1, D5, 250);
 piezoBuzzer buzzer(D8);
 
 WiFiClient espClient;
-mqttClient client("KraanBast2.4", "Snip238!", "192.168.178.74", "/raspberrypi/hassio", espClient, led, buzzer);
+mqttClient client("SSID", "WPA", "Broker-IP", "receiveTopic", espClient, led, buzzer);
 
 NewRemoteTransmitter kakuTransmitter(20589486, D3, 257, 3);
 NewRemoteTransmitter actionTransmitter(54973440, D3, 261, 3);
