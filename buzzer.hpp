@@ -13,8 +13,11 @@ class piezoBuzzer {
 		bool lastFrequencyHigh = false;
 		unsigned long lastFrequencyChange = 0;
 		unsigned int changeFrequencyPeriod;
+
+		const uint16_t updatePeriod;
+        unsigned long lastUpdate = 0;
 	public:
-		piezoBuzzer(const uint8_t buzzerPin);
+		piezoBuzzer(const uint8_t buzzerPin, const uint16_t updatePeriod = 250);
 
 		void turnOn(const uint16_t frequency = 1000);
 		void turnOff();
@@ -22,6 +25,10 @@ class piezoBuzzer {
 		void update();
 		void enableSiren(const uint16_t desiredHighFrequency, const unsigned long changePeriod = 1000, const uint16_t desiredLowFrequency = 0);
 		void disableSiren();
+
+		bool timeToUpdate(){
+			return (millis() > lastUpdate + updatePeriod);
+		}
 };
 
 #endif //__BUZZER_HPP

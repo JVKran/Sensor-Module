@@ -15,12 +15,11 @@ class alarmSystem : public messageListener, public motionListener {
         String state;
         bool nightAlarm = false;
 
-        notificationLed & led;
         piezoBuzzer & buzzer;
 
         void disableActuators();
     public:
-        alarmSystem(mqttClient & client, String topic, notificationLed & led, piezoBuzzer & buzzer, String state = "disarmed");
+        alarmSystem(mqttClient & client, String topic, piezoBuzzer & buzzer, String state = "disarmed");
 
         void armAway();
         void armHome();

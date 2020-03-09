@@ -1,15 +1,13 @@
 #include "alarm.hpp"
 
-alarmSystem::alarmSystem(mqttClient & client, String topic, notificationLed & led, piezoBuzzer & buzzer, String state):
+alarmSystem::alarmSystem(mqttClient & client, String topic, piezoBuzzer & buzzer, String state):
     client(client),
     topic(topic), 
     state(state),
-    led(led),
     buzzer(buzzer)
 {}
 
 void alarmSystem::disableActuators(){
-    led.disableFlashing();
     buzzer.disableSiren();
 }
 
@@ -47,7 +45,6 @@ void alarmSystem::trigger(){
         client.sendMessage(topic.c_str(), state.c_str());
         if(!nightAlarm){
             buzzer.enableSiren(2000, 500, 1000);
-            led.enableFlashing(color(1023, 0, 0), 180000, 1000);
         }
     }
 }

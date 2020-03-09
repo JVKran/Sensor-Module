@@ -1,3 +1,4 @@
+#include <Manchester.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
@@ -11,20 +12,18 @@
 #include "array.hpp"
 #include "mqttClient.hpp"
 #include "climate.hpp"
-#include "led.hpp"
 
-notificationLed led(D2, 1, D5, 250);
 piezoBuzzer buzzer(D8);
 
 WiFiClient espClient;
-mqttClient client("SSID", "WPA", "Broker-IP", "receiveTopic", espClient, led, buzzer);
+mqttClient client("KraanBast2.4", "Snip238!", "192.168.178.81", "/raspberrypi/hassio", espClient, buzzer);
 
 NewRemoteTransmitter kakuTransmitter(20589486, D3, 257, 3);
 NewRemoteTransmitter actionTransmitter(54973440, D3, 261, 3);
 NewRemoteTransmitter nextActionTransmitter(8463360, D3, 261, 3);
 
 speaker bose(D0, client);
-alarmSystem alarm(client, "/woonkamer/alarm", led, buzzer);
+alarmSystem alarm(client, "/woonkamer/alarm", buzzer);
 motionSensor movementSensor(D1);
 tempHumSensor climateSensor(client, D7, 60000);
 
@@ -62,6 +61,9 @@ void setup() {
     ArduinoOTA.setHostname("Sensor Module");
     ArduinoOTA.setPassword((const char *)"c-S!*b52yU_QzcAr");
     ArduinoOTA.begin();
+
+    man.setupReceive(D5, MAN_2400);
+    man.beginReceive();
 }
 
 void loop() {
@@ -70,12 +72,22 @@ void loop() {
     client.checkForMessages();
     movementSensor.checkForMotion();
 
-    if(led.timeToUpdate()){
-        led.update();
+    if(buzzer.timeToUpdate()){
         buzzer.update();
     }
 
     if(climateSensor.timeToMeasure()){
         climateSensor.measureAndPublish();
+    }
+
+    if (man.receiveComplete()) {
+      uint16_t m = man.getMessage();
+      char cString[16];
+      itoa(m, cString, 10);
+      client.sendMessage("Debug", cString);
+      buzzer.turnOn(2000);
+    delay(500);
+    buzzer.turnOff();
+      man.beginReceive(); //start listening for next message right after you retrieve the message
     }
 }

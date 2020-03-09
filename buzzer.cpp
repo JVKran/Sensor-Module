@@ -1,7 +1,8 @@
 #include "buzzer.hpp"
 
-piezoBuzzer::piezoBuzzer(const uint8_t buzzerPin):
-	buzzerPin(buzzerPin)
+piezoBuzzer::piezoBuzzer(const uint8_t buzzerPin, const uint16_t updatePeriod):
+	buzzerPin(buzzerPin),
+	updatePeriod(updatePeriod)
 {
 	pinMode(buzzerPin, OUTPUT);
 }
@@ -15,6 +16,7 @@ void piezoBuzzer::turnOff(){
 }
 
 void piezoBuzzer::update(){
+	lastUpdate = millis();
 	if(sirenEnabled){
 		if(millis() > lastFrequencyChange + changeFrequencyPeriod){
 			lastFrequencyChange = millis();
