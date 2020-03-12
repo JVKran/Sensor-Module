@@ -12,6 +12,7 @@
 #include "array.hpp"
 #include "mqttClient.hpp"
 #include "climate.hpp"
+#include "sensorBridge.hpp"
 
 piezoBuzzer buzzer(D8);
 
@@ -39,6 +40,8 @@ wallSwitch action3(actionTransmitter, 3, client, "/woonkamer/action3", "action3"
 wallSwitch action4(nextActionTransmitter, 1, client, "/woonkamer/action4", "action4");
 array<wallSwitch, 8> wallSwitches = {kaku0, kaku1, kaku2, kaku3, action1, action2, action3, action4};
 
+SensorBridge sensorBridge = SensorBridge(D5, MAN_1200);
+
 void callback(char* topic, byte* payload, unsigned int length) {
     static String message;
     for (int i = 0; i < length; i++) {
@@ -57,13 +60,12 @@ void setup() {
     client.addListener(alarm);
     client.addListener(bose);
     movementSensor.addListener(alarm);
+    sensorBridge.addListener(client);
 
     ArduinoOTA.setHostname("Sensor Module");
     ArduinoOTA.setPassword((const char *)"c-S!*b52yU_QzcAr");
     ArduinoOTA.begin();
 
-    man.setupReceive(D5, MAN_2400);
-    man.beginReceive();
 }
 
 void loop() {
@@ -80,14 +82,5 @@ void loop() {
         climateSensor.measureAndPublish();
     }
 
-    if (man.receiveComplete()) {
-      uint16_t m = man.getMessage();
-      char cString[16];
-      itoa(m, cString, 10);
-      client.sendMessage("Debug", cString);
-      buzzer.turnOn(2000);
-    delay(500);
-    buzzer.turnOff();
-      man.beginReceive(); //start listening for next message right after you retrieve the message
-    }
+    sensorBridge();
 }

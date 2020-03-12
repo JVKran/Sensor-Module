@@ -6,6 +6,7 @@
 #include <PubSubClient.h>
 #include "array.hpp"
 #include "buzzer.hpp"
+#include "sensorBridge.hpp"
 
 class messageListener {
     public:
@@ -14,7 +15,7 @@ class messageListener {
 
 void callback(char* topic, byte* payload, unsigned int length);
 
-class mqttClient {
+class mqttClient : public SensorListener {
     private:
         char* ssid;
         char* password;
@@ -41,6 +42,8 @@ class mqttClient {
 
         void checkForMessages();
         void sendMessage(const char* topic, const char* messageToSend);
+
+        virtual void dataReceived(const uint8_t sensorId, const bool motion, const int16_t temperature, const int16_t humidity, const int32_t pressure) override;
 };
 
 #endif //__CONNECTIONS_HPP
