@@ -21,16 +21,17 @@ class alarmSystem : public messageListener, public motionListener {
     public:
         alarmSystem(mqttClient & client, String topic, piezoBuzzer & buzzer, String state = "disarmed");
 
+        virtual void messageReceived(const String & receivedMessage, const char* topic = "") override;
+        virtual void motionDetected() override;
+
+        String getState() const;
+
         void armAway();
         void armHome();
         void armNight();
         void disarm();
         void trigger();
 
-        String getState();
-
-        virtual void messageReceived(const String & receivedMessage, const char* topic = "") override;
-        virtual void motionDetected() override;
 };
 
 #endif //__ALARM_HPP

@@ -32,11 +32,9 @@ wallSwitch kaku0(kakuTransmitter, 0, client, "/woonkamer/kaku0", "kaku0");
 wallSwitch kaku1(kakuTransmitter, 1, client, "/woonkamer/kaku1", "kaku1");
 wallSwitch kaku2(kakuTransmitter, 2, client, "/woonkamer/kaku2", "kaku2");
 wallSwitch kaku3(kakuTransmitter, 3, client, "/woonkamer/kaku3", "kaku3");
-
 wallSwitch action1(actionTransmitter, 1, client, "/woonkamer/action1", "action1");
 wallSwitch action2(actionTransmitter, 2, client, "/woonkamer/action2", "action2");
 wallSwitch action3(actionTransmitter, 3, client, "/woonkamer/action3", "action3");
-
 wallSwitch action4(nextActionTransmitter, 1, client, "/woonkamer/action4", "action4");
 array<wallSwitch, 8> wallSwitches = {kaku0, kaku1, kaku2, kaku3, action1, action2, action3, action4};
 
@@ -65,22 +63,14 @@ void setup() {
     ArduinoOTA.setHostname("Sensor Module");
     ArduinoOTA.setPassword((const char *)"c-S!*b52yU_QzcAr");
     ArduinoOTA.begin();
-
 }
 
 void loop() {
-    ArduinoOTA.handle();
+    ArduinoOTA.handle();    // Handle incoming upload requests
 
-    client.checkForMessages();
-    movementSensor.checkForMotion();
-
-    if(buzzer.timeToUpdate()){
-        buzzer.update();
-    }
-
-    if(climateSensor.timeToMeasure()){
-        climateSensor.measureAndPublish();
-    }
-
-    sensorBridge();
+    client();               // Handle incoming messages
+    movementSensor();       // Measure motion and notify listeners.
+    buzzer();               // Handle the possible change in frequency.
+    climateSensor();        // Possibly update temperature and humidity readings.
+    sensorBridge();         // Handle incoming transmissions from Wireless Multi-Sensors.
 }

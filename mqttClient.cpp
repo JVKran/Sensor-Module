@@ -60,7 +60,7 @@ void mqttClient::reconnect() {
     }
 }
 
-void mqttClient::checkForMessages(){
+void mqttClient::operator()(){
     if (!client.connected()) {
         reconnect();
     }
@@ -71,7 +71,7 @@ void mqttClient::sendMessage(const char* topic, const char* messageToSend){
     client.publish(topic, messageToSend, retainedMessages);
 }
 
-void mqttClient::dataReceived(const uint8_t sensorId, const bool motion, const int16_t temperature, const int16_t humidity, const int32_t pressure){
+void mqttClient::dataReceived(const uint8_t sensorId, const bool motion, const int16_t temperature, const int16_t humidity, const int32_t pressure, const uint16_t voltage){
     String temp = String(temperature).substring(0, 2);
     String commaTemp = String(temperature).substring(2);
 
@@ -86,5 +86,6 @@ void mqttClient::dataReceived(const uint8_t sensorId, const bool motion, const i
         client.publish("/slaapkamer/temperatuur", String(temp + '.' + commaTemp).c_str());
         client.publish("/slaapkamer/vochtigheid", String(hum + '.' + commaHum).c_str());
         client.publish("/slaapkamer/luchtdruk", String(press + '.' + commaPress).c_str());
+        client.publish("/slaapkamer/spanning", String(voltage).c_str());
     }
 }

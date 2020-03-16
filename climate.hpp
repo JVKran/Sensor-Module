@@ -16,9 +16,8 @@ class tempHumSensor {
 	public:
 		tempHumSensor(mqttClient & client, const uint8_t sensorPin, const unsigned int pollPeriod);
 
+		void operator()();
 		void measureAndPublish();
-		bool timeToMeasure();
-
 };
 
 #endif //__CLIMATE_HPP

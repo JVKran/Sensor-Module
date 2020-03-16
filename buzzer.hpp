@@ -22,13 +22,11 @@ class piezoBuzzer {
 		void turnOn(const uint16_t frequency = 1000);
 		void turnOff();
 
-		void update();
+		void handleSirenChange();
 		void enableSiren(const uint16_t desiredHighFrequency, const unsigned long changePeriod = 1000, const uint16_t desiredLowFrequency = 0);
 		void disableSiren();
 
-		bool timeToUpdate(){
-			return (millis() > lastUpdate + updatePeriod);
-		}
+		void operator()();
 };
 
 #endif //__BUZZER_HPP

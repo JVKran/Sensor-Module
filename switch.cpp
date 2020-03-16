@@ -10,19 +10,15 @@ wallSwitch::wallSwitch(NewRemoteTransmitter & transmitter, int unit, mqttClient 
 {}
 
 void wallSwitch::turnOn(){
-	if(!turnedOn()){
-		state = true;
-		client.sendMessage(topic.c_str(), "on");
-		transmitter.sendUnit(unit, state);	
-	}
+	state = true;
+	client.sendMessage(topic.c_str(), "on");
+	transmitter.sendUnit(unit, state);	
 }
 
 void wallSwitch::turnOff(){
-	if(turnedOn()){
-		state = false;
-		client.sendMessage(topic.c_str(), "off");
-		transmitter.sendUnit(unit, state);
-	}
+	state = false;
+	client.sendMessage(topic.c_str(), "off");
+	transmitter.sendUnit(unit, state);
 }
 
 void wallSwitch::toggle(){

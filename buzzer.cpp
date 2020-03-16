@@ -15,8 +15,7 @@ void piezoBuzzer::turnOff(){
 	noTone(buzzerPin);
 }
 
-void piezoBuzzer::update(){
-	lastUpdate = millis();
+void piezoBuzzer::handleSirenChange(){
 	if(sirenEnabled){
 		if(millis() > lastFrequencyChange + changeFrequencyPeriod){
 			lastFrequencyChange = millis();
@@ -40,4 +39,11 @@ void piezoBuzzer::enableSiren(const uint16_t desiredHighFrequency, const unsigne
 void piezoBuzzer::disableSiren(){
 	turnOff();
 	sirenEnabled = false;
+}
+
+void piezoBuzzer::operator()(){
+	if(millis() > lastUpdate + updatePeriod){
+		handleSirenChange();
+		lastUpdate = millis();
+	}
 }

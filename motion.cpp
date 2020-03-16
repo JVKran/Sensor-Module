@@ -4,7 +4,7 @@ motionSensor::motionSensor(const uint8_t motionPin):
     motionPin(motionPin)
 {}
 
-void motionSensor::checkForMotion(){
+void motionSensor::operator()(){
     if(digitalRead(motionPin) == 1){
         for (uint8_t i = 0; i < amountOfListeners; i++){
             listeners[i]->motionDetected();

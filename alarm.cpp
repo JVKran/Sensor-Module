@@ -35,7 +35,7 @@ void alarmSystem::disarm(){
     nightAlarm = false;
 }
 
-String alarmSystem::getState(){
+String alarmSystem::getState() const {
     return state;
 }
 

@@ -19,7 +19,7 @@ class motionSensor {
         motionSensor(const uint8_t motionPin);
 
         void addListener(motionListener & listener);
-        void checkForMotion();
+        void operator()();
 };
 
 #endif //__MOTION_HPP
