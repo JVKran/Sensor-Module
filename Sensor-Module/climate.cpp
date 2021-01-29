@@ -1,10 +1,14 @@
 #include "climate.hpp"
 
-tempHumSensor::tempHumSensor(mqttClient & client, const uint8_t sensorPin, const unsigned int pollPeriod):
-	sensorPin(sensorPin),
+tempHumSensor::tempHumSensor(mqttClient & client, const unsigned int pollPeriod):
 	pollPeriod(pollPeriod),
 	client(client)
 {}
+
+void tempHumSensor::begin(){
+	Wire.begin();
+	climateSensor.begin();
+}
 
 void tempHumSensor::operator()(){
 	if(millis() > lastMeasurement + pollPeriod){
@@ -14,7 +18,7 @@ void tempHumSensor::operator()(){
 }
 
 void tempHumSensor::measureAndPublish(){
-	sensor.read(sensorPin);
-	client.sendMessage("/woonkamer/vochtigheid", String(float(sensor.humidity)).c_str());
-	client.sendMessage("/woonkamer/temperatuur", String(float(sensor.temperature)).c_str());
+	climateSensor.takeForcedMeasurement();
+	client.sendMessage("/woonkamer/vochtigheid", String(climateSensor.getRelativeHumidity()).c_str());
+	client.sendMessage("/woonkamer/temperatuur", String(climateSensor.getTemperatureCelcius()).c_str());
 }

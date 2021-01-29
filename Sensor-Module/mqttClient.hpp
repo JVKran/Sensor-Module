@@ -44,7 +44,7 @@ class mqttClient : public SensorListener {
         void operator()();
         void sendMessage(const char* topic, const char* messageToSend);
 
-        virtual void dataReceived(const uint8_t sensorId, const bool motion, const int16_t temperature, const int16_t humidity, const int32_t pressure, const uint16_t voltage) override;
+        virtual void dataReceived(const uint8_t sensorId, const bool motion, const bool reedState, const int16_t temperature, const int16_t humidity, const int32_t pressure, const uint16_t voltage, const uint16_t lightIntensity) override;
 };
 
 #endif //__CONNECTIONS_HPP

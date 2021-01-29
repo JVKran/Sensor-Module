@@ -14,9 +14,8 @@ mqttClient::mqttClient(char* ssid, char* password, char* mqttServer, const char*
 }
 
 void mqttClient::addListener(messageListener & listener){
-    if(amountOfListeners <= 19){
-        listeners[amountOfListeners] = &listener;
-        amountOfListeners++;
+    if(amountOfListeners < 20){
+        listeners[amountOfListeners++] = &listener;
     }
 }
 
@@ -71,7 +70,7 @@ void mqttClient::sendMessage(const char* topic, const char* messageToSend){
     client.publish(topic, messageToSend, retainedMessages);
 }
 
-void mqttClient::dataReceived(const uint8_t sensorId, const bool motion, const int16_t temperature, const int16_t humidity, const int32_t pressure, const uint16_t voltage){
+void mqttClient::dataReceived(const uint8_t sensorId, const bool motion, const bool reedState, const int16_t temperature, const int16_t humidity, const int32_t pressure, const uint16_t voltage, const uint16_t lightIntensity){
     String temp = String(temperature).substring(0, 2);
     String commaTemp = String(temperature).substring(2);
 
@@ -81,11 +80,11 @@ void mqttClient::dataReceived(const uint8_t sensorId, const bool motion, const i
     String press = String(pressure).substring(0, 4);
     String commaPress = String(pressure).substring(4);
 
-    if(sensorId == 1){
-        client.publish("/slaapkamer/beweging", String(motion).c_str());
-        client.publish("/slaapkamer/temperatuur", String(temp + '.' + commaTemp).c_str());
-        client.publish("/slaapkamer/vochtigheid", String(hum + '.' + commaHum).c_str());
-        client.publish("/slaapkamer/luchtdruk", String(press + '.' + commaPress).c_str());
-        client.publish("/slaapkamer/spanning", String(voltage).c_str());
-    }
+    client.publish(String("/sensormodules/" + String(sensorId) + "/motion").c_str(),      String(motion).c_str());
+    client.publish(String("/sensormodules/" + String(sensorId) + "/reed").c_str(),          String(reedState).c_str());
+    client.publish(String("/sensormodules/" + String(sensorId) + "/temperature").c_str(),   String(temp + '.' + commaTemp).c_str());
+    client.publish(String("/sensormodules/" + String(sensorId) + "/humidity").c_str(),   String(hum + '.' + commaHum).c_str());
+    client.publish(String("/sensormodules/" + String(sensorId) + "/pressure").c_str(),     String(press + '.' + commaPress).c_str());
+    client.publish(String("/sensormodules/" + String(sensorId) + "/voltage").c_str(),      String(voltage).c_str());
+    client.publish(String("/sensormodules/" + String(sensorId) + "/illuminance").c_str(),  String(lightIntensity).c_str());
 }

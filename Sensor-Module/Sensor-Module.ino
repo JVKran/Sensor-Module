@@ -5,6 +5,8 @@
 #include <ArduinoOTA.h>
 #include <PubSubClient.h>
 #include <NewRemoteTransmitter.h>
+
+#include "secrets.hpp"
 #include "speaker.hpp"
 #include "alarm.hpp"
 #include "buzzer.hpp"
@@ -17,7 +19,7 @@
 piezoBuzzer buzzer(D8);
 
 WiFiClient espClient;
-mqttClient client("KraanBast2.4", "Snip238!", "192.168.178.81", "/raspberrypi/hassio", espClient, buzzer);
+mqttClient client(SSID, WPA, BROKER, TOPIC, espClient, buzzer);
 
 NewRemoteTransmitter kakuTransmitter(20589486, D3, 257, 3);
 NewRemoteTransmitter actionTransmitter(54973440, D3, 261, 3);
@@ -25,8 +27,8 @@ NewRemoteTransmitter nextActionTransmitter(8463360, D3, 261, 3);
 
 speaker bose(D0, client);
 alarmSystem alarm(client, "/woonkamer/alarm", buzzer);
-motionSensor movementSensor(D1);
-tempHumSensor climateSensor(client, D7, 60000);
+motionSensor movementSensor(D6);
+tempHumSensor climateSensor(client, 600000);
 
 wallSwitch kaku0(kakuTransmitter, 0, client, "/woonkamer/kaku0", "kaku0");
 wallSwitch kaku1(kakuTransmitter, 1, client, "/woonkamer/kaku1", "kaku1");
@@ -50,6 +52,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void setup() {
+    climateSensor.begin();
+
     for(wallSwitch & wallSocket : wallSwitches){
         client.addListener(wallSocket);
     }
@@ -61,7 +65,7 @@ void setup() {
     sensorBridge.addListener(client);
 
     ArduinoOTA.setHostname("Sensor Module");
-    ArduinoOTA.setPassword((const char *)"c-S!*b52yU_QzcAr");
+    ArduinoOTA.setPassword((const char *)OTA_PASSWORD);
     ArduinoOTA.begin();
 }
 
